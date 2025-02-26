@@ -3,10 +3,180 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>p5.js Game</title>
+    <meta property="og:title" content="Snake Roguelite - The Ultimate Snake Game">
+    <meta property="og:description" content="Play the most addictive snake roguelite game with special powers and upgrades!">
+    <meta property="og:image" content="https://via.placeholder.com/1200x630">
+    <meta property="og:url" content="https://yourwebsite.com/snakeroguelite">
+    <meta name="twitter:card" content="summary_large_image">
+    <title>Snake Roguelite</title>
     <script src="p5.js"></script>
+    <script src="p5.sound.min.js"></script>
     <script src="sketch.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #222;
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+        }
+        canvas {
+            display: block;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+            border-radius: 5px;
+        }
+        #gameContainer {
+            position: relative;
+        }
+        #gameDetails {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 5px;
+            color: white;
+            font-size: 14px;
+            z-index: 100;
+        }
+        .socialBtn {
+            background-color: #444;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            margin: 3px;
+            font-size: 11px;
+        }
+        .socialBtn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 3px 10px rgba(0, 255, 0, 0.3);
+        }
+        .socialBtn.twitter {
+            background-color: #1DA1F2;
+        }
+        .socialBtn.facebook {
+            background-color: #4267B2;
+        }
+        .socialBtn.copy {
+            background-color: #28a745;
+        }
+        #notification {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            display: none;
+        }
+        @media (max-width: 768px) {
+            canvas {
+                max-width: 100%;
+                height: auto;
+            }
+        }
+    </style>
 </head>
 <body>
+    <div id="gameContainer">
+        <!-- P5.js will create the canvas here -->
+        <div id="gameDetails">
+            <div id="gameScore">Score: 0</div>
+            <div id="socialButtons">
+                <button class="socialBtn twitter" onclick="shareTwitter()">Twitter</button>
+                <button class="socialBtn facebook" onclick="shareFacebook()">FB</button>
+                <button class="socialBtn copy" onclick="copyLink()">Copy Link</button>
+            </div>
+        </div>
+    </div>
+    <div id="notification">Link copied to clipboard!</div>
+
+    <script>
+        function shareTwitter() {
+            const text = "I just scored " + (window.gameScore || 0) + " in Snake Roguelite! Can you beat my score?";
+            const url = window.location.href;
+            window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
+        }
+        
+        function shareFacebook() {
+            const url = window.location.href;
+            window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
+        }
+        
+        function copyLink() {
+            const url = window.location.href;
+            navigator.clipboard.writeText(url).then(() => {
+                const notification = document.getElementById('notification');
+                notification.style.display = 'block';
+                setTimeout(() => {
+                    notification.style.display = 'none';
+                }, 2000);
+            });
+        }
+        
+        // Make game score available to sharing functions
+        window.updateGameScore = function(score) {
+            window.gameScore = score;
+            document.getElementById('gameScore').textContent = 'Score: ' + score;
+        };
+        
+        // Add touch controls for mobile
+        document.addEventListener('touchstart', handleTouchStart, false);
+        document.addEventListener('touchmove', handleTouchMove, false);
+        
+        let xDown = null;
+        let yDown = null;
+        
+        function handleTouchStart(evt) {
+            const firstTouch = evt.touches[0];
+            xDown = firstTouch.clientX;
+            yDown = firstTouch.clientY;
+        }
+        
+        function handleTouchMove(evt) {
+            if (!xDown || !yDown) {
+                return;
+            }
+            
+            const xUp = evt.touches[0].clientX;
+            const yUp = evt.touches[0].clientY;
+            
+            const xDiff = xDown - xUp;
+            const yDiff = yDown - yUp;
+            
+            if (Math.abs(xDiff) > Math.abs(yDiff)) {
+                if (xDiff > 0) {
+                    // Swipe left
+                    window.dispatchEvent(new KeyboardEvent('keydown', {'keyCode': 37}));
+                } else {
+                    // Swipe right
+                    window.dispatchEvent(new KeyboardEvent('keydown', {'keyCode': 39}));
+                }
+            } else {
+                if (yDiff > 0) {
+                    // Swipe up
+                    window.dispatchEvent(new KeyboardEvent('keydown', {'keyCode': 38}));
+                } else {
+                    // Swipe down
+                    window.dispatchEvent(new KeyboardEvent('keydown', {'keyCode': 40}));
+                }
+            }
+            
+            xDown = null;
+            yDown = null;
+        }
+    </script>
 </body>
 </html>
